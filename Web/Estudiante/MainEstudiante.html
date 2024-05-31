@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Estudiantes</title>
+    <!-- Incluye jQuery primero -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Luego incluye Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .table-wrapper {
+            max-height: 500px;
+            overflow-x: auto;
+        }
+        .create-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .navbar .nav-item.active {
+            background-color: #343a40; /* Color de fondo para el elemento activo */
+        }
+        .navbar .nav-item.active .nav-link {
+            color: #ffffff !important; /* Texto en blanco para el elemento activo */
+        }
+        .navbar .ml-auto {
+            margin-left: auto !important; /* Alineación a la derecha del contenido en la barra de navegación */
+        }
+        .navbar .usuario-info {
+            color: #ffffff; /* Color del texto */
+            margin-right: 10px; /* Espacio a la derecha */
+        }
+        .navbar .btn-usuario {
+            color: #ffffff !important;
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            margin-left: 10px;
+        }
+        .navbar .btn-usuario:hover {
+            background-color: #e0a800 !important;
+            border-color: #d39e00 !important;
+        }
+        .navbar .btn-cerrar-sesion {
+            color: #ffffff !important;
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            margin-left: 10px;
+        }
+        .navbar .btn-cerrar-sesion:hover {
+            background-color: #c82333 !important;
+            border-color: #bd2130 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Encabezado con navegación -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <!-- Logo y nombre del programa -->
+                <a class="navbar-brand" href="../index.html">
+                    <img src="../class.png" width="30" height="30" class="d-inline-block align-top" alt="">
+                    Classroom
+                </a>
+                <!-- Navegación -->
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../Profesor/mainProfesoresController.php">Profesores</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../Estudiante/mainEstudiantesController.php">Estudiantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../Materia/crear_materia.php">Materias</a>
+                    </li>
+                </ul>
+                <!-- Información de usuario y botones -->
+                <div class="ml-auto">
+                    <a href="#" class="btn btn-usuario" id="miPerfilBtn">Mi Perfil</a>
+                    <a href="#" class="btn btn-cerrar-sesion" id="cerrarSesionBtn">Cerrar Sesión</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    
+    <div class="container mt-5">
+        <h2 class="mb-4">Lista de Estudiantes</h2>
+        <div class="table-wrapper">
+            <table id="tabla-estudiantes" class="table table-striped table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Email</th>
+                        <th>Usuario</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($estudiantes as $estudiante): ?>
+                        <tr data-id="<?php echo $estudiante['ID']; ?>">
+                            <td><?php echo $estudiante['ID']; ?></td>
+                            <td><?php echo $estudiante['NOMBRE']; ?></td>
+                            <td><?php echo $estudiante['APELLIDO']; ?></td>
+                            <td><?php echo $estudiante['EMAIL']; ?></td>
+                            <td><?php echo $estudiante['USUARIO']; ?></td>
+                            <td>
+                                <button class="btn btn-primary btn-sm btn-editar" data-id="<?php echo $estudiante['ID']; ?>">Editar</button>
+                                <button class="btn btn-danger btn-sm eliminar-estudiante" data-id="<?php echo $estudiante['ID']; ?>">Eliminar</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <div class="create-button">
+            <a href="CrearEstudiante.html" class="btn btn-success btn-lg">Crear Estudiante</a>
+        </div>
+    </div>
+
+    <!-- Modal para editar estudiante -->
+    <div class="modal fade" id="modalEditarEstudiante" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Editar Estudiante</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="formEditarEstudiante" action="editar_estudiante.php" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" id="edit-id" name="id">
+                        <div class="form-group">
+                            <label for="edit-nombre">Nombre:</label>
+                            <input type="text" class="form-control" id="edit-nombre" name="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-apellido">Apellido:</label>
+                            <input type="text" class="form-control" id="edit-apellido" name="apellido" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email:</label>
+                            <input type="email" class="form-control" id="edit-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-usuario">Usuario:</label>
+                            <input type="text" class="form-control" id="edit-usuario" name="usuario" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-clave">Clave:</label>
+                            <input type="text" class="form-control" id="edit-clave" name="clave" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        $(document).ready(function() {
+            // Función para obtener la información de sesión del usuario
+            $.ajax({
+                url: '../session_check.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.loggedIn) {
+                        $('#nombreUsuario').text(response.username);
+                        $('#miPerfilBtn').attr('href', '../miperfil.html?usuario=' + response.username);
+                        $('#miPerfilBtn').text(response.username);
+                    } else {
+                        // Redireccionar al inicio de sesión si no hay sesión activa
+                        window.location.href = '../login.html'; // Ajustar la ruta según sea necesario
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al obtener la información de sesión del usuario:', error);
+                }
+            });
+            // Botón de cerrar sesión
+            $('#cerrarSesionBtn').click(function() {
+                $.ajax({
+                    url: '../logout.php',
+                    type: 'POST',
+                    success: function(response) {
+                        // Redireccionar al inicio de sesión después de cerrar sesión
+                        window.location.href = '../index.html'; // Ajustar la ruta según sea necesario
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error al cerrar sesión:', error);
+                    }
+                });
+            });
+        });
+
+        // Función para cargar los datos de un estudiante y mostrar el modal de edición
+        $(document).on("click", ".btn-editar", function() {
+            var idEstudiante = $(this).data("id");
+            $.ajax({
+                url: "mainEstudiantesController.php",
+                type: "GET",
+                data: { id: idEstudiante },
+                dataType: "json",
+                success: function(response) {
+                    if (response.status === "success") {
+                        var estudiante = response.estudiante;
+                        $("#edit-id").val(estudiante.ID);
+                        $("#edit-nombre").val(estudiante.NOMBRE);
+                        $("#edit-apellido").val(estudiante.APELLIDO);
+                        $("#edit-email").val(estudiante.EMAIL);
+                        $("#edit-usuario").val(estudiante.USUARIO);
+                        $("#edit-clave").val(estudiante.CLAVE);
+                        $("#modalEditarEstudiante").modal("show");
+                    } else {
+                        alert("Error al obtener los datos del estudiante: " + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    alert("Error al obtener los datos del estudiante.");
+                }
+            });
+        });
+
+        // Función para enviar el formulario de edición de
+        // estudiante
+        $("#formEditarEstudiante").submit(function(event) {
+            event.preventDefault();
+            $.ajax({
+                url: $(this).attr("action"),
+                type: $(this).attr("method"),
+                data: $(this).serialize(),
+                dataType: "json",
+                success: function(response) {
+                    if (response.status === "success") {
+                        // Cerrar el modal de edición
+                        $("#modalEditarEstudiante").modal("hide");
+                        // Actualizar la fila del estudiante en la tabla
+                        var estudiante = response.estudiante;
+                        var fila = $('#tabla-estudiantes').find('tr[data-id="' + estudiante.ID + '"]');
+                        fila.find('td:eq(1)').text(estudiante.NOMBRE);
+                        fila.find('td:eq(2)').text(estudiante.APELLIDO);
+                        fila.find('td:eq(3)').text(estudiante.EMAIL);
+                        fila.find('td:eq(4)').text(estudiante.USUARIO);
+                    } else {
+                        alert("Error al editar el estudiante: " + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    alert("Error al editar el estudiante.");
+                }
+            });
+        });
+
+        // Limpiar el formulario al cerrar el modal de edición
+        $('#modalEditarEstudiante').on('hidden.bs.modal', function() {
+            $('#formEditarEstudiante')[0].reset();
+        });
+
+        // Función para eliminar un estudiante
+        $(document).on("click", ".eliminar-estudiante", function() {
+            var idEstudiante = $(this).data("id");
+            if (confirm("¿Estás seguro de que quieres eliminar este estudiante?")) {
+                $.ajax({
+                    url: "mainEstudiantesController.php",
+                    type: "POST",
+                    data: {
+                        delete_id: idEstudiante },
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.status === "success") {
+                            // Actualizar la tabla con los nuevos datos de estudiantes
+                            var estudiantes = response.estudiantes;
+                            var nuevaTabla = "";
+                            $.each(estudiantes, function(index, estudiante) {
+                                nuevaTabla += '<tr data-id="' + estudiante.ID + '">';
+                                nuevaTabla += '<td>' + estudiante.ID + '</td>';
+                                nuevaTabla += '<td>' + estudiante.NOMBRE + '</td>';
+                                nuevaTabla += '<td>' + estudiante.APELLIDO + '</td>';
+                                nuevaTabla += '<td>' + estudiante.EMAIL + '</td>';
+                                nuevaTabla += '<td>' + estudiante.USUARIO + '</td>';
+                                nuevaTabla += '<td>';
+                                nuevaTabla += '<button class="btn btn-primary btn-sm btn-editar" data-id="' + estudiante.ID + '">Editar</button>';
+                                nuevaTabla += '<button class="btn btn-danger btn-sm eliminar-estudiante" data-id="' + estudiante.ID + '">Eliminar</button>';
+                                nuevaTabla += '</td>';
+                                nuevaTabla += '</tr>';
+                            });
+                            $("#tabla-estudiantes tbody").html(nuevaTabla);
+                        } else {
+                            alert("Error al eliminar el estudiante: " + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert("Error al eliminar el estudiante.");
+                    }
+                });
+            }
+        });
+    </script>
+    
+</body>
+</html>

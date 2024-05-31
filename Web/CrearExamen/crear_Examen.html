@@ -1,0 +1,81 @@
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Conexión a la base de datos
+    $db_user = 'ALEJO';
+    $db_password = 'root';
+    $db_host = '//localhost/XE';
+
+    $conn = oci_pconnect($db_user, $db_password, $db_host);
+    if (!$conn) {
+        $e = oci_error();
+        trigger_error(htmlentities($e['message'], ENT_QUOTES), E_USER_ERROR);
+    }
+
+    // Validar que se haya seleccionado al menos una pregunta
+    if (!isset($_POST['preguntas']) || empty($_POST['preguntas'])) {
+        echo "<div class='container mt-5'>";
+        echo "<h1>Error al crear examen</h1>";
+        echo "<p>Debe seleccionar al menos una pregunta para el examen.</p>";
+        echo "</div>";
+        exit;
+    }
+
+    $id_examen = $_POST['id_examen'];
+    $materia = $_POST['materia'];
+    $profesor = $_POST['profesor'];
+    $nombre_examen = $_POST['nombre_examen'];
+    $fecha = $_POST['fecha'];
+    $numero_preguntas = $_POST['numero_preguntas'];
+    $preguntas = $_POST['preguntas'];
+
+    // Insertar examen
+    $query_insert_examen = "INSERT INTO examen (id, materia, profesor, nombre_examen, fecha, numero_preguntas) VALUES (:id_examen, :materia, :profesor, :nombre_examen, TO_DATE(:fecha, 'YYYY-MM-DD'), :numero_preguntas)";
+    $stid_insert_examen = oci_parse($conn, $query_insert_examen);
+
+    oci_bind_by_name($stid_insert_examen, ':id_examen', $id_examen);
+    oci_bind_by_name($stid_insert_examen, ':materia', $materia);
+    oci_bind_by_name($stid_insert_examen, ':profesor', $profesor);
+    oci_bind_by_name($stid_insert_examen, ':nombre_examen', $nombre_examen);
+    oci_bind_by_name($stid_insert_examen, ':fecha', $fecha);
+    oci_bind_by_name($stid_insert_examen, ':numero_preguntas', $numero_preguntas);
+
+    if (!oci_execute($stid_insert_examen)) {
+        $e = oci_error($stid_insert_examen);
+        echo "<div class='container mt-5'>";
+        echo "<h1>Error al crear examen</h1>";
+        echo "<p>" . htmlentities($e['message'], ENT_QUOTES) . "</p>";
+        echo "</div>";
+        oci_free_statement($stid_insert_examen);
+        oci_close($conn);
+        exit;
+    }
+
+    // Insertar preguntas seleccionadas en la tabla examen_pregunta
+    $query_insert_examen_pregunta = "INSERT INTO examen_pregunta (examen_id, pregunta_id) VALUES (:examen_id, :pregunta_id)";
+    $stid_insert_examen_pregunta = oci_parse($conn, $query_insert_examen_pregunta);
+
+    foreach ($preguntas as $pregunta_id) {
+        oci_bind_by_name($stid_insert_examen_pregunta, ':examen_id', $id_examen);
+        oci_bind_by_name($stid_insert_examen_pregunta, ':pregunta_id', $pregunta_id);
+
+        if (!oci_execute($stid_insert_examen_pregunta)) {
+            $e = oci_error($stid_insert_examen_pregunta);
+            echo "<div class='container mt-5'>";
+            echo "<h1>Error al asociar preguntas con examen</h1>";
+            echo "<p>" . htmlentities($e['message'], ENT_QUOTES) . "</p>";
+            echo "</div>";
+            oci_free_statement($stid_insert_examen_pregunta);
+            oci_close($conn);
+            exit;
+        }
+    }
+
+    echo "<div class='container mt-5'>";
+    echo "<h1>Examen creado exitosamente</h1>";
+    echo "<p>El examen ha sido creado correctamente.</p>";
+    echo "</div>";
+
+    oci_free_statement($stid_insert_examen_pregunta);
+    oci_close($conn);
+}
+?>

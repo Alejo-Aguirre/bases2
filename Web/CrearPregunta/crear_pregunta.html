@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Preguntas para Examen</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .question-form {
+            display: none;
+        }
+    </style>
+    <script>
+        function showQuestionForm() {
+            const type = document.getElementById('question-type').value;
+            document.querySelectorAll('.question-form').forEach(form => form.style.display = 'none');
+            document.getElementById(type + '-form').style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Crear Preguntas para Examen</h1>
+        <form action="controller_Pregunta.php" method="POST">
+            <div class="form-group">
+                <label for="question-type">Tipo de Pregunta:</label>
+                <select class="form-control" id="question-type" name="question_type" onchange="showQuestionForm()" required>
+                    <option value="">Seleccione un tipo</option>
+                    <option value="multiple-choice">Opción Múltiple</option>
+                    <option value="true-false">Verdadero/Falso</option>
+                    <option value="short-answer">Respuesta Corta</option>
+                </select>
+            </div>
+
+            <div id="multiple-choice-form" class="question-form">
+                <div class="form-group">
+                    <label for="mc-question">Pregunta:</label>
+                    <input type="text" class="form-control" id="mc-question" name="mc_question" required>
+                </div>
+                <div class="form-group">
+                    <label for="mc-option1">Opción 1:</label>
+                    <input type="text" class="form-control" id="mc-option1" name="mc_option1" required>
+                </div>
+                <div class="form-group">
+                    <label for="mc-option2">Opción 2:</label>
+                    <input type="text" class="form-control" id="mc-option2" name="mc_option2" required>
+                </div>
+                <div class="form-group">
+                    <label for="mc-option3">Opción 3:</label>
+                    <input type="text" class="form-control" id="mc-option3" name="mc_option3" required>
+                </div>
+                <div class="form-group">
+                    <label for="mc-option4">Opción 4:</label>
+                    <input type="text" class="form-control" id="mc-option4" name="mc_option4" required>
+                </div>
+                <div class="form-group">
+                    <label for="mc-correct">Opción Correcta:</label>
+                    <select class="form-control" id="mc-correct" name="mc_correct" required>
+                        <option value="1">Opción 1</option>
+                        <option value="2">Opción 2</option>
+                        <option value="3">Opción 3</option>
+                        <option value="4">Opción 4</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="true-false-form" class="question-form">
+                <div class="form-group">
+                    <label for="tf-question">Pregunta:</label>
+                    <input type="text" class="form-control" id="tf-question" name="tf_question" required>
+                </div>
+                <div class="form-group">
+                    <label for="tf-correct">Respuesta Correcta:</label>
+                    <select class="form-control" id="tf-correct" name="tf_correct" required>
+                        <option value="true">Verdadero</option>
+                        <option value="false">Falso</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="short-answer-form" class="question-form">
+                <div class="form-group">
+                    <label for="sa-question">Pregunta:</label>
+                    <input type="text" class="form-control" id="sa-question" name="sa_question" required>
+                </div>
+                <div class="form-group">
+                    <label for="sa-answer">Respuesta Correcta:</label>
+                    <input type="text" class="form-control" id="sa-answer" name="sa_answer" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Crear Pregunta</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

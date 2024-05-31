@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar-brand img {
+            height: 40px;
+        }
+        .login-card {
+            max-width: 400px;
+            margin: auto;
+        }
+        .login-card .card-body {
+            padding: 2rem;
+        }
+        .btn-logout {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-user {
+            background-color: #ffc107;
+            color: black;
+        }
+        #alertContainer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div id="alertContainer"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="class.png" alt="Logo">
+                <span class="ml-2">Classroom</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Exámenes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Resultados</a>
+                    </li>
+                    <li id="profesoresNav" class="nav-item" style="display: none;">
+                        <a class="nav-link" href="../Web/Profesor/mainProfesoresController.php">Profesores</a>
+                    </li>
+                    <li id="estudiantesNav" class="nav-item" style="display: none;">
+                        <a class="nav-link" href="../Web/Estudiante/mainEstudiantesController.php">Estudiantes</a>
+                    </li> 
+                    <li id="materiasNav" class="nav-item" style="display: none;">
+                        <a class="nav-link" href="../Web/Materia/registrar_materia.php">Registrar Materia</a>
+                    </li>
+                    <li id="preguntasNav" class="nav-item" style="display: none;">
+                        <a class="nav-link" href="../Web/CrearPregunta/controller_Pregunta.php">Crear Pregunta</a>
+                    </li>
+                    <li id="examenNav" class="nav-item" style="display: none;">
+                        <a class="nav-link" href="../Web/CrearExamen/create_exam.php">Crear Examen</a>
+                    </li>
+
+
+                    <li id="loginButton" class="nav-item">
+                        <button class="btn btn-outline-light" onclick="toggleLoginForm()"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>
+                    </li>
+                    <li id="userButton" class="nav-item" style="display: none;">
+                        <a id="userLink" class="btn btn-user" href="#"><i class="fas fa-user"></i> <span id="username"></span></a>
+                    </li>
+                    <li id="logoutButton" class="nav-item" style="display: none;">
+                        <button class="btn btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="loginContainer" class="container mt-5" style="display: none;">
+        <div class="card login-card">
+            <div class="card-body">
+                <h2 class="card-title text-center">Iniciar sesión</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="tipo_cuenta">Tipo de cuenta:</label>
+                        <select id="tipo_cuenta" class="custom-select" name="tipo_cuenta" required>
+                            <option value="profesor">Profesor</option>
+                            <option value="estudiante">Estudiante</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="usuario">Usuario:</label>
+                        <input type="text" class="form-control" id="usuario" name="usuario" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="clave">Contraseña:</label>
+                        <input type="password" class="form-control" id="clave" name="clave" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Iniciar sesión</button>
+                </form>
+                <p class="mt-3 text-center">¿Eres nuevo? <a href="registro.html">Regístrate</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row" id="materiasContainer">
+            <!-- Aquí se mostrarán las materias -->
+        </div>
+    </div>
+
+    <script>
+        function toggleLoginForm() {
+            var loginForm = document.getElementById("loginContainer");
+            loginForm.style.display = loginForm.style.display === "none" || loginForm.style.display === "" ? "block" : "none";
+        }
+    
+        function logout() {
+            fetch('logout.php', { method: 'POST' })
+                .then(response => response.text())
+                .then(data => {
+                    if (data === 'logout_successful') {
+                        showAlert('Sesión cerrada', 'success');
+                        updateUI(false);
+                    }
+                })
+                .catch(error => {
+                    showAlert('Error en la conexión', 'danger');
+                    console.error('Error:', error);
+                });
+        }
+    
+        function showAlert(message, type) {
+            var alertContainer = document.getElementById('alertContainer');
+            var alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = message + '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+            alertContainer.appendChild(alertDiv);
+    
+            setTimeout(function() {
+                $(alertDiv).alert('close');
+            }, 3000);
+        }
+    
+        function updateUI(loggedIn, username = '', tipo_cuenta = '') {
+            if (loggedIn) {
+                document.getElementById("loginButton").style.display = "none";
+                document.getElementById("userButton").style.display = "block";
+                document.getElementById("logoutButton").style.display = "block";
+                document.getElementById("username").textContent = username;
+                document.getElementById("userLink").setAttribute("href", "miperfil.html");
+    
+                if (tipo_cuenta === 'admin') {
+                    document.getElementById("profesoresNav").style.display = "block";
+                    document.getElementById("estudiantesNav").style.display = "block";
+                    document.getElementById("materiasNav").style.display = "block";
+                }
+                if (tipo_cuenta === 'estudiante') {
+                    document.getElementById("materiasNav").style.display = "block";
+                }
+                if (tipo_cuenta === 'profesor') {
+                    document.getElementById("preguntasNav").style.display = "block";
+                    document.getElementById("examenNav").style.display = "block";
+                    examenNav
+                }
+            } else {
+                document.getElementById("loginButton").style.display = "block";
+                document.getElementById("userButton").style.display = "none";
+                document.getElementById("logoutButton").style.display = "none";
+                document.getElementById("username").textContent = '';
+                document.getElementById("profesoresNav").style.display = "none";
+                document.getElementById("estudiantesNav").style.display = "none";
+            }
+        }
+
+        function fetchMaterias() {
+            fetch('cargar_materias_profesor.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "error") {
+                        showAlert(data.message, 'danger');
+                    } else {
+                        displayMaterias(data.materias);
+                    }
+                })
+                .catch(error => {
+                    showAlert('Error en la conexión', 'danger');
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayMaterias(materias) {
+            const container = document.getElementById('materiasContainer');
+            container.innerHTML = ''; // Clear the container
+
+            materias.forEach(materia => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 mb-4';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+
+                const cardTitle = document.createElement('h5');
+                cardTitle.className = 'card-title';
+                cardTitle.textContent = materia.nombre;
+
+                const cardLink = document.createElement('a');
+                cardLink.href = `materia.php?id=${materia.id}`;
+                cardLink.className = 'btn btn-primary';
+                cardLink.textContent = 'Ver Materia';
+
+                cardBody.appendChild(cardTitle);
+                cardBody.appendChild(cardLink);
+                card.appendChild(cardBody);
+                col.appendChild(card);
+                container.appendChild(col);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if the user is logged in and is a professor
+            fetch('session_check.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.loggedIn && data.tipo_cuenta === 'profesor') {
+                        fetchMaterias();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+    
+            fetch('../Controllers/loginController.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showAlert('Inicio de sesión exitoso', 'success');
+                    updateUI(true, data.username, data.tipo_cuenta);
+                    document.getElementById("loginContainer").style.display = "none";
+                    if (data.tipo_cuenta === 'profesor') {
+                        fetchMaterias();
+                    }
+                } else {
+                    showAlert(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Error en la conexión', 'danger');
+                console.error('Error:', error);
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('session_check.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateUI(data.loggedIn, data.username, data.tipo_cuenta);
+                })
+                .catch(error => {
+                    showAlert('Error en la conexión', 'danger');
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
